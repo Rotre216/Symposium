@@ -1,8 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def exit_program(event):
-    """Exits the program gracefully."""
+"""
+Create Your Own Superconductor Simulation (With Python)
+Philip Mocz (2023), @PMocz555
+
+
+Simulate a simplified version of the 
+time-dependent complex Ginzburg-Landau equation 
+with the Pseudo Spectral method
+
+d psi / d t = (1+i*alpha) * nabla^2 psi + psi - (1-i*beta)*|psi|^2*psi
+"""
+
+def exit_all(event):
+    """ exits the program """
     raise SystemExit
 
 def initialize_simulation_parameters():
