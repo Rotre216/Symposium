@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 """
 Create Your Own Superconductor Simulation (With Python)
-Philip Mocz (2023), @PMocz555
+Philip Mocz (2023), @PMocz666
 
 
 Simulate a simplified version of the 
