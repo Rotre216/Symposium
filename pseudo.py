@@ -2,10 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-Create Your Own Superconductor Simulation (With Python)
-Philip Mocz (2023), @PMocz666
-
-
 Simulate a simplified version of the 
 time-dependent complex Ginzburg-Landau equation 
 with the Pseudo Spectral method
@@ -15,7 +11,9 @@ d psi / d t = (1+i*alpha) * nabla^2 psi + psi - (1-i*beta)*|psi|^2*psi
 
 def exit_all(event):
     """ exits the program """
+    plt.close()
     raise SystemExit
+    
 
 def initialize_simulation_parameters():
     """Initializes parameters for the superconductor simulation."""
@@ -64,7 +62,7 @@ def main():
     kx, ky, kSq = initialize_fourier_space_variables(parameters['N'], 200)
 
     fig = plt.figure(figsize=(6, 6))
-    fig.canvas.mpl_connect('close_event', exit_program)
+    fig.canvas.mpl_connect('close_event', exit_all)
     output_count = 1
 
     for i in range(Nt):
