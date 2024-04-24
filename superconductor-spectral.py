@@ -12,6 +12,7 @@ with the Spectral method
 d psi / d t = (1+i*alpha) * nabla^2 psi + psi - (1-i*beta)*|psi|^2*psi
 """
 
+		
 def exit_all(event):
 	""" exits the program """
 	raise SystemExit
@@ -38,38 +39,37 @@ def main():
 	
 	# Intial Condition
 	psi = 1e-2 * np.random.randn(N,N)
-	V = -(1.j+beta)*np.abs(psi)**2
+	V = -(1.j+beta)*np.abs(psi)**2 #partie non linéaire de l'équation
 	
-	# Fourier Space Variables
+	#variables dans l'esace de fourier
 	klin = 2.0 * np.pi / L * np.arange(-N/2, N/2)
 	kx, ky = np.meshgrid(klin, klin)
 	kx = np.fft.ifftshift(kx)
 	ky = np.fft.ifftshift(ky)
 	kSq = kx**2 + ky**2
 	
-	# number of timesteps
+	#nombre de pas
 	Nt = int(np.ceil(tEnd/dt))
 	
-	# prep figure
+
 	fig = plt.figure(figsize=(4,4), dpi=150)
 	fig.canvas.mpl_connect('close_event', exit_all)
 	outputCount = 1
-	
-	# Simulation Main Loop
-	for i in range(Nt):
+
+	for i in range(Nt): #Split-step method
 		
-		# (1/2) kick
+		#première calculation totale pour un demi pas
 		psi = np.exp(-1.j*dt/2.0*V) * psi
 		
-		# drift
+		# calculation de la portion linéaire dans l'espace de fourier pour un pas
 		psihat = np.fft.fftn(psi)
 		psihat = np.exp(dt * (-1.j* (kSq*(alpha-1.j) + 1.j))) * psihat 
 		psi = np.fft.ifftn(psihat)
 		
-		# update potential
+		# calculation de la partie non-linéaire
 		V = -(1.j+beta)*np.abs(psi)**2
 		
-		# (1/2) kick
+		# calculation de l'équation totale pour un demi pas
 		psi = np.exp(-1.j*dt/2.0*V) * psi
 		
 		# update time

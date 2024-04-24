@@ -1,19 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-"""
-Simulate a simplified version of the 
-time-dependent complex Ginzburg-Landau equation 
-with the Pseudo Spectral method
-
-d psi / d t = (1+i*alpha) * nabla^2 psi + psi - (1-i*beta)*|psi|^2*psi
-"""
-
 def exit_all(event):
     """ exits the program """
     plt.close()
     raise SystemExit
-    
 
 def initialize_simulation_parameters():
     """
@@ -29,6 +20,7 @@ def initialize_simulation_parameters():
         'tOut': 0.2,         # Output frequency: Time interval for displaying results
         'alpha': 0.1,        # Superconductor parameter 1
         'beta': 1.5,         # Superconductor parameter 2
+        'B_ext': 0.05,       # Magnitude of the external magnetic field
         'plotRealTime': True,# Enable real-time plotting
         'random_seed': 917   # Seed for random number generation
     }
@@ -113,7 +105,8 @@ def main():
         drift_phase = parameters['dt'] * (-1j * (kSq * (parameters['alpha'] - 1j) + 1j))
         psihat *= np.exp(drift_phase)
         psi = np.fft.ifft2(psihat).real
-        V = -(1j + parameters['beta']) * np.abs(psi) ** 2  # Update external potential
+        # Update external potential with an external magnetic field
+        V = -(1j + parameters['beta']) * np.abs(psi) ** 2 + parameters['B_ext'] * (xx * ky - yy * kx)
         psi = np.exp(-1j * parameters['dt'] / 2.0 * V) * psi
         t = (i + 1) * parameters['dt']
 
