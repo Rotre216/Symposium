@@ -1,0 +1,94 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+"""
+Simuler une version simplifiée de 
+l'équation complexe de Ginzburg-Landau dépendant du temps
+avec la méthode Pseudo Spectrale
+
+d psi / d t = (1+i*alpha) * nabla^2 psi + psi - (1-i*beta)*|psi|^2*psi
+"""
+
+def exit_all(event): #Quitter le code
+    plt.close()
+    raise SystemExit
+    
+
+def initialize_simulation_parameters(): #Initialise les paramètres pour la simulation du supraconducteur
+    parameters = {
+        'N': 400,            # Résolution spatiale : Nombre de points dans la grille pour chaque dimension x et y
+        'tEnd': 100,         # Heure de fin de la simulation
+        'dt': 0.2,           # Le pas de temps
+        'tOut': 0.2,         # Fréquence de sortie : Intervalle de temps d'affichage des résultats
+        'alpha': 0.1,        # Paramètre d'ordre
+        'beta': 1.5,         # Paramètre de non linéarité
+        'plotRealTime': True,# Permettre le traçage en temps réel 
+        'random_seed': 917   # Pour la génération de nombre aléatoire
+    }
+    return parameters #Retourne les paramètre dans un dictionnaire
+
+def initialize_domain(N): #initialiser le domaine des fréquences, c'est-à-dire les valeurs de x et y de la simulation
+    L = 200  # Grandeur du domaine
+    x = np.linspace(0, L, num=N, endpoint=False)  # Direction
+    xx, yy = np.meshgrid(x, x)  #xx et yy sont des grilles associé au coordonnée spacial en 2D.
+    return xx, yy 
+
+def initialize_initial_conditions(N, random_seed, beta): #Conditions initial
+    np.random.seed(random_seed)
+    psi = 1e-2 * np.random.randn(N, N)  # Initialisation condition initial aléatoire
+    V = -(1j + beta) * np.abs(psi) ** 2  # Potentiel externe
+    return psi, V
+
+def initialize_fourier_space_variables(N, L): #Espace de fourier
+    klin = 2.0 * np.pi / L * np.arange(-N/2, N/2)  # Vecteur linéaire
+    kx, ky = np.meshgrid(klin, klin)  # Nombres d'ondes
+    kx = np.fft.ifftshift(kx)  #Déplacer la composante de fréquence nulle vers le centre
+    ky = np.fft.ifftshift(ky)
+    kSq = kx ** 2 + ky ** 2  # Vecteur d'onde au carrée
+    return kx, ky, kSq
+
+def main(): #Supraconductivité
+    parameters = initialize_simulation_parameters()
+    Nt = int(np.ceil(parameters['tEnd'] / parameters['dt']))
+
+    #Initialisation
+    xx, yy = initialize_domain(parameters['N'])
+    psi, V = initialize_initial_conditions(parameters['N'], parameters['random_seed'], parameters['beta'])
+    kx, ky, kSq = initialize_fourier_space_variables(parameters['N'], 200)
+
+    # Préparer la figure
+    fig = plt.figure(figsize=(6, 6))
+    fig.canvas.mpl_connect('close_event', exit_all)
+    output_count = 1
+
+    # ittération de calcul principal
+    for i in range(Nt):
+        # Update psi in Fourier space
+        psi = np.exp(-1j * parameters['dt'] / 2.0 * V) * psi
+        psihat = np.fft.fft2(psi)
+        drift_phase = parameters['dt'] * (-1j * (kSq * (parameters['alpha'] - 1j) + 1j))
+        psihat *= np.exp(drift_phase)
+        psi = np.fft.ifft2(psihat).real
+        V = -(1j + parameters['beta']) * np.abs(psi) ** 2  # Update external potential
+        psi = np.exp(-1j * parameters['dt'] / 2.0 * V) * psi
+        t = (i + 1) * parameters['dt']
+
+        # Image associé à l'ittération
+        if parameters['plotRealTime'] and t >= output_count * parameters['tOut']:
+            plt.clf()
+            plt.imshow(np.abs(psi), cmap='bwr', extent=(0, 200, 0, 200))
+            plt.clim(0, 1)
+            plt.gca().invert_yaxis()
+            plt.gca().set_xlabel('x')
+            plt.gca().set_ylabel('y')
+            plt.title(f'Time: {t}')
+            plt.colorbar(label='|psi|')
+            plt.pause(0.001)
+            output_count += 1
+
+    # Enregistrer et afficher le résultat final
+    plt.savefig('superconductor.png', dpi=300)
+    plt.show()
+
+if __name__ == "__main__":
+    main()
