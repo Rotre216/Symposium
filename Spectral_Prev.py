@@ -2,15 +2,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    """ Superconductor simulation using the spectral method """
+    """ Superconductor simulation using the Fourier pseudo-spectral """
     
     # Simulation parameters
     N = 400         # Spatial resolution
     t = 0           # Current time of the simulation
     tEnd = 100     # Time at which simulation ends
-    dt = 0.1        # Timestep
+    dt = 0.15        # Timestep
     tOut = 0.2      # Draw frequency
-    alpha = 0.1     # Superconductor param 1
+    alpha = 0     # Superconductor param 1
     beta = 1.5      # Superconductor param 2
     plotRealTime = True  # Switch on for plotting as the simulation goes along
     np.random.seed(917)
@@ -33,12 +33,13 @@ def main():
     
     # Number of timesteps
     Nt = int(np.ceil(tEnd/dt))
-    
+    print(Nt)
     # Prep figure
     fig = plt.figure(figsize=(4, 4), dpi=150)
     outputCount = 1
     # Simulation Main Loop
     for i in range(Nt):
+        
         # Transform to Fourier space
         psi_k = np.fft.fftn(psi)
         
@@ -59,13 +60,14 @@ def main():
         if plotRealTime and (t >= outputCount * tOut or i == Nt - 1):
             plt.cla()
             plt.imshow(np.abs(psi), cmap='bwr', extent=(0, L, 0, L))
-            #plt.colorbar()
+            #if i == 1:
+                #plt.colorbar()
             plt.clim(0, 1)
-            plt.pause(0.004)
+            plt.pause(0.001)
             outputCount += 1
     
     # Save figure
-    plt.savefig('superconductorSpectral.png', dpi=240)
+    plt.savefig('a0b1,5Spectral.png', dpi=240)
     plt.show()
     
     return 0
